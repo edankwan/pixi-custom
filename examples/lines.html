@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mesh</title>
+    <style>
+
+    html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0 0;
+        overflow: hidden;
+    }
+    </style>
+</head>
+<body>
+
+<script id="shader-vs" type="x-shader/x-vertex">
+precision mediump float;
+
+attribute vec2 aVertexPosition;
+
+varying vec2 vUV;
+
+uniform mat3 translationMatrix;
+uniform mat3 projectionMatrix;
+
+uniform float uTime;
+
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+void main(void) {
+    vec2 pos = aVertexPosition;
+
+    vUV = pos + 0.5;
+
+    pos += pow(abs(sin(rand(aVertexPosition) + uTime * 0.0005)), 4.0);
+
+    pos = fract(pos + 0.5) - 0.5;
+
+    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(pos, 1.0)).xy, 0.0, 1.0);
+
+}
+
+</script>
+
+<script id="shader-fs" type="x-shader/x-fragment">
+precision mediump float;
+
+varying vec2 vUV;
+
+uniform float alpha;
+uniform sampler2D uTexture;
+
+void main(void) {
+    vec4 color = texture2D(uTexture, vUV);
+    gl_FragColor = color * alpha;
+}
+
+</script>
+
+<script src="../libs/three.js"></script>
+<script src="../libs/pixi.js"></script>
+<script src="../libs/mout.js"></script>
+<script src="../src/CustomShader.js"></script>
+<script src="../src/CustomObject.js"></script>
+<script src="../src/CustomLine.js"></script>
+
+<script>
+
+var time;
+
+var renderer;
+var scene;
+
+var lines;
+
+var rotationMatrix;
+
+var AMOUNT = 20000;
+
+function init() {
+    renderer = new PIXI.WebGLRenderer(window.innerWidth, window.innerHeight, {
+        antialias: true
+    });
+
+    scene = new PIXI.Container();
+
+    var vertices = new Float32Array(AMOUNT * 4);
+
+    for(var i = 0, len = vertices.length; i < len; i++) {
+        vertices[i] = Math.random() - 0.5;
+    }
+
+    var linesShader = new CustomShader({
+        renderer: renderer,
+        vs : document.getElementById('shader-vs').innerHTML,
+        fs : document.getElementById('shader-fs').innerHTML,
+        attributes : {
+        },
+        uniforms : {
+            uTime:  { type: '1f' },
+            uTexture:  { type: 't' }
+        }
+    });
+    lines = new CustomLine({
+        shader : linesShader,
+        vertices : vertices,
+        uTime : 0,
+        uTexture : PIXI.Texture.fromImage('img/girl.jpg')
+    });
+
+    scene.addChild(lines);
+
+    document.body.appendChild(renderer.view);
+    window.addEventListener('resize', onResize);
+    onResize();
+    loop();
+}
+
+function onResize() {
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+    var containScale = Math.min(width, height);
+    lines.scale.set(containScale, containScale);
+    lines.position.x = width / 2;
+    lines.position.y = height / 2;
+    renderer.resize(width, height);
+}
+
+function loop() {
+    window.requestAnimationFrame(loop);
+    var now = Date.now();
+    render(time ? now - time : 0);
+    time = now;
+}
+
+function render(dt) {
+    lines.uTime += dt;
+    renderer.render(scene);
+}
+
+init();
+</script>
+
+</body>
+</html>
