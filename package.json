@@ -1,28 +1,28 @@
 {
-    "name": "pixi-custom",
-    "version": "0.0.1",
-    "description": "A flexible(sort of) way to expose the possibility of using vertex shader in PIXI 3.0",
-    "main": "index.js",
-    "directories": {
-        "example": "examples"
-    },
-    "scripts": {
-        "build": "browserify index.js --standalone pixiCustom > ./examples/js/pixiCustom.js"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/edankwan/pixi-custom.git"
-    },
-    "author": "Edan Kwan <edan@edankwan.com>",
-    "license": "MIT",
-    "dependencies": {
-        "mout": "~0.11.0"
-    },
-    "devDependencies": {
-        "browserify": "~10.2.3"
-    },
-    "bugs": {
-        "url": "https://github.com/edankwan/pixi-custom/issues"
-    },
-    "homepage": "https://github.com/edankwan/pixi-custom"
+  "name": "pixi-custom",
+  "version": "0.0.2",
+  "description": "A flexible(sort of) way to expose the possibility of using vertex shader in PIXI 3.0",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "build": "browserify index.js --standalone pixiCustom > ./examples/js/pixiCustom.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edankwan/pixi-custom.git"
+  },
+  "author": "Edan Kwan <edan@edankwan.com>",
+  "license": "MIT",
+  "dependencies": {
+    "mout": "~0.11.0"
+  },
+  "devDependencies": {
+    "browserify": "~10.2.3"
+  },
+  "bugs": {
+    "url": "https://github.com/edankwan/pixi-custom/issues"
+  },
+  "homepage": "https://github.com/edankwan/pixi-custom"
 }
