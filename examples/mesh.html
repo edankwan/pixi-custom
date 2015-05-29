@@ -66,13 +66,9 @@ void main(void) {
 
 </script>
 
-<script src="../libs/three.js"></script>
-<script src="../libs/pixi.js"></script>
-<script src="../libs/mout.js"></script>
-<script src="../src/CustomShader.js"></script>
-<script src="../src/CustomObject.js"></script>
-<script src="../src/CustomMesh.js"></script>
-
+<script src="js/three.js"></script>
+<script src="js/pixi.js"></script>
+<script src="js/pixiCustom.js"></script>
 <script>
 
 var time;
@@ -97,7 +93,7 @@ function init() {
     bufferGeometry.fromGeometry(new THREE.IcosahedronGeometry(200, 3));
 
     rotationMatrix = new THREE.Matrix4();
-    var globeShader = new CustomShader({
+    var globeShader = new pixiCustom.Shader({
         renderer: renderer,
         vs : document.getElementById('shader-vs').innerHTML,
         fs : document.getElementById('shader-fs').innerHTML,
@@ -119,7 +115,7 @@ function init() {
             uRotation : { type: 'm4'}
         }
     });
-    globe = new CustomMesh({
+    globe = new pixiCustom.Mesh({
         shader : globeShader,
         vertices : bufferGeometry.attributes.position.array,
         aUV : bufferGeometry.attributes.uv.array,

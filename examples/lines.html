@@ -61,13 +61,9 @@ void main(void) {
 
 </script>
 
-<script src="../libs/three.js"></script>
-<script src="../libs/pixi.js"></script>
-<script src="../libs/mout.js"></script>
-<script src="../src/CustomShader.js"></script>
-<script src="../src/CustomObject.js"></script>
-<script src="../src/CustomLine.js"></script>
-
+<script src="js/three.js"></script>
+<script src="js/pixi.js"></script>
+<script src="js/pixiCustom.js"></script>
 <script>
 
 var time;
@@ -94,7 +90,7 @@ function init() {
         vertices[i] = Math.random() - 0.5;
     }
 
-    var linesShader = new CustomShader({
+    var linesShader = new pixiCustom.Shader({
         renderer: renderer,
         vs : document.getElementById('shader-vs').innerHTML,
         fs : document.getElementById('shader-fs').innerHTML,
@@ -105,7 +101,7 @@ function init() {
             uTexture:  { type: 't' }
         }
     });
-    lines = new CustomLine({
+    lines = new pixiCustom.Lines({
         shader : linesShader,
         vertices : vertices,
         uTime : 0,

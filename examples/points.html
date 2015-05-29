@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Particles</title>
+    <title>Points</title>
     <style>
 
     html, body {
@@ -60,13 +60,8 @@ void main(void) {
 
 </script>
 
-<script src="../libs/pixi.js"></script>
-
-<!-- please use https://github.com/mout/mout/ -->
-<script src="../libs/mout.js"></script>
-
-<script src="../src/CustomShader.js"></script>
-<script src="../src/CustomObject.js"></script>
+<script src="js/pixi.js"></script>
+<script src="js/pixiCustom.js"></script>
 
 <script>
 
@@ -100,7 +95,7 @@ function init() {
         aRandom[i] = Math.random();
     }
 
-    var particlesShader = new CustomShader({
+    var particlesShader = new pixiCustom.Shader({
         renderer: renderer,
         vs : document.getElementById('shader-vs').innerHTML,
         fs : document.getElementById('shader-fs').innerHTML,
@@ -111,7 +106,7 @@ function init() {
             uTime:  { type: '1f' }
         }
     });
-    particles = new CustomObject({
+    particles = new pixiCustom.Points({
         shader : particlesShader,
         vertices : vertices,
         aRandom : aRandom,
