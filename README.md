@@ -7,7 +7,7 @@ It requires [mout.js](http://moutjs.com/)
 
 ### Examples
 ####Particles
-[![http://edankwan.github.io/pixi-custom/examples/particles.html](http://edankwan.github.io/pixi-custom/screenshot/particles.jpg)](http://edankwan.github.io/pixi-custom/examples/particles.html)
+[![http://edankwan.github.io/pixi-custom/examples/points.html](http://edankwan.github.io/pixi-custom/screenshot/points.jpg)](http://edankwan.github.io/pixi-custom/examples/points.html)
 
 ####Lines
 [![http://edankwan.github.io/pixi-custom/examples/lines.html](http://edankwan.github.io/pixi-custom/screenshot/lines.jpg)](http://edankwan.github.io/pixi-custom/examples/lines.html)
