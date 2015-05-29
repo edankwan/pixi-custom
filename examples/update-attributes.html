@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Points</title>
+    <title>Update Attributes</title>
     <style>
 
     html, body {
@@ -32,6 +32,9 @@ precision mediump float;
 
 attribute vec2 aVertexPosition;
 attribute float aRandom;
+attribute vec3 aColor;
+
+varying vec3 vColor;
 
 uniform mat3 translationMatrix;
 uniform mat3 projectionMatrix;
@@ -43,6 +46,8 @@ uniform float uTime;
 
 void main(void) {
     vec2 pos = aVertexPosition;
+
+    vColor = aColor;
 
     pos += vec2(
         cos(uTime * 0.001 + PI2 * aRandom),
@@ -59,6 +64,8 @@ void main(void) {
 <script id="shader-fs" type="x-shader/x-fragment">
 precision mediump float;
 
+varying vec3 vColor;
+
 uniform float alpha;
 
 void main(void) {
@@ -66,13 +73,14 @@ void main(void) {
     vec2 coord =  gl_PointCoord.xy;
     float d = smoothstep(0.0, 1.0, length(coord - 0.5) * 2.0);
     float level = 1.0 - d;
-    gl_FragColor = vec4(level) * alpha;
+    gl_FragColor = vec4(vColor, 1.0) * level * alpha;
 
 }
 
 </script>
 
 <script src="js/pixi.js"></script>
+<script src="js/dat.gui.js"></script>
 <script src="js/pixiCustom.js"></script>
 
 <script>
@@ -85,6 +93,27 @@ var scene;
 var particles;
 
 var AMOUNT = 50000;
+var AMOUNT3 = AMOUNT * 3;
+
+var colorSwitcher = 0;
+
+var datGuiCfg = {
+
+    changeColor: function () {
+
+        aColor = particles.aColor;
+
+        colorSwitcher = (colorSwitcher + 1) % 3;
+
+        for(var i = 0; i < AMOUNT3; i++) {
+            aColor[i] = i % 3 === colorSwitcher ? Math.random() : 0;
+        }
+
+        particles.dirties.aColor = true;
+
+    }
+};
+
 
 function init() {
     renderer = new PIXI.WebGLRenderer(window.innerWidth, window.innerHeight, {
@@ -107,21 +136,29 @@ function init() {
         aRandom[i] = Math.random();
     }
 
+    var aColor = new Float32Array(AMOUNT3);
+    for( i = 0; i < AMOUNT3; i++) {
+        aColor[i] = i % 3 === colorSwitcher ? Math.random() : 0;
+    }
+
     var particlesShader = new pixiCustom.Shader({
         renderer: renderer,
         vs : document.getElementById('shader-vs').innerHTML,
         fs : document.getElementById('shader-fs').innerHTML,
         attributes : {
-            aRandom: { type: '1f' }
+            aRandom: { type: '1f' },
+            aColor: { type: '3f' }
         },
         uniforms : {
             uTime:  { type: '1f' }
         }
     });
+
     particles = new pixiCustom.Points({
         shader : particlesShader,
         vertices : vertices,
         aRandom : aRandom,
+        aColor : aColor,
         uTime : 0
     });
     scene.addChild(particles);
@@ -130,13 +167,16 @@ function init() {
     window.addEventListener('resize', onResize);
     onResize();
     loop();
+
+    var gui = new dat.GUI();
+    gui.add(datGuiCfg, 'changeColor');
+
 }
 
 function onResize() {
     var width = window.innerWidth;
     var height = window.innerHeight;
-    particles.position.x = width / 2;
-    particles.position.y = height / 2;
+    particles.position.set(width / 2, height / 2);
     renderer.resize(width, height);
 }
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Points</title>
+    <title>Draw Offset</title>
     <style>
 
     html, body {
@@ -73,6 +73,7 @@ void main(void) {
 </script>
 
 <script src="js/pixi.js"></script>
+<script src="js/dat.gui.js"></script>
 <script src="js/pixiCustom.js"></script>
 
 <script>
@@ -85,6 +86,11 @@ var scene;
 var particles;
 
 var AMOUNT = 50000;
+
+var datGuiCfg = {
+    drawCount: AMOUNT,
+    drawOffset: 0
+};
 
 function init() {
     renderer = new PIXI.WebGLRenderer(window.innerWidth, window.innerHeight, {
@@ -130,6 +136,11 @@ function init() {
     window.addEventListener('resize', onResize);
     onResize();
     loop();
+
+    var gui = new dat.GUI();
+    gui.add(datGuiCfg, 'drawCount', 0, AMOUNT).step(1);
+    gui.add(datGuiCfg, 'drawOffset', 0, AMOUNT).step(1);
+
 }
 
 function onResize() {
@@ -149,6 +160,8 @@ function loop() {
 
 function render(dt) {
     particles.uTime += dt;
+    particles.drawOffset = datGuiCfg.drawOffset;
+    particles.drawCount = Math.min(datGuiCfg.drawCount, AMOUNT - datGuiCfg.drawOffset);
     renderer.render(scene);
 }
 
