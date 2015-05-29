@@ -51,7 +51,7 @@ void main(void) {
 
     vUV = aUV;
 
-    vBrightness = dot(aNormal, normalize(vec3(1.0, -1.0, 1.0)));
+    vBrightness = dot((uRotation * vec4(aNormal, 1.0)).xyz, normalize(vec3(1.0, -1.0, 1.0)));
 
     pos = (uRotation * vec4(pos, 1.0)).xyz;
 
@@ -72,6 +72,7 @@ uniform sampler2D uTexture;
 
 void main(void) {
     vec4 color = texture2D(uTexture, vUV);
+    color.rgb *= 0.5 + vBrightness * 0.5;
     color.rgb += vBrightness * 0.25;
     gl_FragColor = color * alpha;
 }
