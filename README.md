@@ -47,7 +47,7 @@ particles = new pixiCustom.Points({
 Which means you can easily change the values by doing:
 ```
 particles.aRandom[0] = 100;
-particles.dirties[aRandom] = true;
+particles.dirties['aRandom'] = true;
 
 particles.uTime += dt;
 ```
