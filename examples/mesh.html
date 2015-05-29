@@ -11,6 +11,18 @@
         margin: 0 0;
         overflow: hidden;
     }
+    .view-source-btn {
+        position: fixed;
+        z-index: 1024;
+        right: 20px;
+        top: 20px;
+        padding: 2px 5px;
+        font-family: 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
+        font-size: 12px;
+        cursor: pointer;
+        background-color: #eee;
+        color: #000;
+    }
     </style>
 </head>
 <body>
@@ -157,6 +169,6 @@ function render(dt) {
 
 init();
 </script>
-
+<div class="view-source-btn" onclick="window.open('view-source:' + window.location.href );">View Source</div>
 </body>
 </html>
