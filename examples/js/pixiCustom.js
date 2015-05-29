@@ -134,7 +134,7 @@ function Shader(cfg) {
         },
 
         internalAttributes: {
-            aVertexPosition: 0
+
         },
 
         attributes : {
