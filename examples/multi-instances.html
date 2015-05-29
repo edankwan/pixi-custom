@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Points</title>
+    <title>Multi Instances</title>
     <style>
 
     html, body {
@@ -82,9 +82,10 @@ var time;
 var renderer;
 var scene;
 
-var particles;
+var particles1;
+var particles2;
 
-var AMOUNT = 50000;
+var AMOUNT = 25000;
 
 function init() {
     renderer = new PIXI.WebGLRenderer(window.innerWidth, window.innerHeight, {
@@ -118,13 +119,23 @@ function init() {
             uTime:  { type: '1f' }
         }
     });
-    particles = new pixiCustom.Points({
+
+    particles1 = new pixiCustom.Points({
         shader : particlesShader,
         vertices : vertices,
         aRandom : aRandom,
         uTime : 0
     });
-    scene.addChild(particles);
+    scene.addChild(particles1);
+
+    particles2 = new pixiCustom.Points({
+        shader : particlesShader,
+        vertices : vertices,
+        aRandom : aRandom,
+        uTime : 0
+    });
+    scene.addChild(particles2);
+    particles2.scale.set(0.5, 0.5);
 
     document.body.appendChild(renderer.view);
     window.addEventListener('resize', onResize);
@@ -135,8 +146,8 @@ function init() {
 function onResize() {
     var width = window.innerWidth;
     var height = window.innerHeight;
-    particles.position.x = width / 2;
-    particles.position.y = height / 2;
+    particles1.position.set(width / 2 - 300, height / 2);
+    particles2.position.set(width / 2 + 300, height / 2);
     renderer.resize(width, height);
 }
 
@@ -148,7 +159,8 @@ function loop() {
 }
 
 function render(dt) {
-    particles.uTime += dt;
+    particles1.uTime += dt;
+    particles2.uTime -= dt;
     renderer.render(scene);
 }
 
