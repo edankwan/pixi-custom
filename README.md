@@ -52,6 +52,20 @@ particles.dirties[aRandom] = true;
 particles.uTime += dt;
 ```
 
+### Internal Uniforms
+If we don't take good use of the PIXI container system, there is no point to use PIXI. So, PIXI Custom respect the internal uniform setting.
+```
+// translation matrix
+uniform mat3 translationMatrix;
+
+// projection matrix
+uniform mat3 projectionMatrix;
+
+// alpha value that multiplied parent container alpha 
+uniform float alpha;
+```
+
+
 ### Examples
 ####Particles
 [![http://edankwan.github.io/pixi-custom/examples/points.html](http://edankwan.github.io/pixi-custom/screenshot/points.jpg)](http://edankwan.github.io/pixi-custom/examples/points.html)
