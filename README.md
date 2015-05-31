@@ -40,7 +40,16 @@ particles = new pixiCustom.Points({
     shader : shader,
     vertices : vertices,
     aRandom : aRandom,
-    uTime : 0
+    uTime : 0,
+    beforeRender : function(gl) {
+        // in case you want to do some advanced stuff
+        // gl.enable(gl.DEPTH_TEST);
+        // gl.enable(gl.CULL_FACE);
+        // gl.cullFace(gl.BACK);
+    },
+    afterRender : function(gl) {
+        // gl.disable(gl.DEPTH_TEST);
+    }
 });
 
 ```
