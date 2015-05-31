@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mesh</title>
+    <style>
+
+    html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0 0;
+        overflow: hidden;
+        font-family: 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
+        font-size: 12px;
+    }
+    .view-source-btn {
+        position: fixed;
+        z-index: 1024;
+        left: 20px;
+        top: 20px;
+        padding: 2px 5px;
+        font-size: 12px;
+        cursor: pointer;
+        background-color: #eee;
+        color: #000;
+    }
+    .info {
+        position: fixed;
+        z-index: 512;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        padding: 5px 20px;
+        background-color: rgba(255, 255, 255, 0.75);
+        line-height: 18px;
+        color: #000;
+    }
+    a {
+        font-weight: bold;
+        color: #c00;
+    }
+    </style>
+</head>
+<body>
+
+<script id="shader-vs" type="x-shader/x-vertex">
+precision mediump float;
+
+attribute vec3 aVertexPosition;
+attribute vec3 aNormal;
+
+varying vec2 vN;
+// varying float vBrightness;
+
+uniform mat3 translationMatrix;
+uniform mat3 projectionMatrix;
+uniform mat4 uRotation;
+
+uniform float uTime;
+
+#define PI 3.141592653589
+#define PI2 6.283185307179
+
+void main(void) {
+    vec3 pos = aVertexPosition;
+
+    vec3 e = normalize( vec3( uRotation * vec4( pos, 1.0 ) ) );
+    vec3 n = normalize( (uRotation * vec4(aNormal, 1.0)).xyz );
+
+    vec3 r = reflect( e, n );
+    float m = 2. * sqrt( pow( r.x, 2. ) + pow( r.y, 2. ) + pow( r.z + 1., 2. ) );
+    vN = r.xy / m + .5;
+
+    // vBrightness = dot((uRotation * vec4(aNormal, 1.0)).xyz, normalize(vec3(1.0, -1.0, 1.0)));
+
+    pos = (uRotation * vec4(pos, 1.0)).xyz;
+
+    gl_Position = vec4((projectionMatrix * translationMatrix * pos).xy, pos.z * 0.001, 1.0);
+
+}
+
+</script>
+
+<script id="shader-fs" type="x-shader/x-fragment">
+precision mediump float;
+
+varying vec2 vN;
+// varying float vBrightness;
+
+uniform float alpha;
+uniform sampler2D uTexture;
+
+void main(void) {
+    vec4 color = texture2D(uTexture, vN);
+    // color.rgb *= 0.5 + vBrightness * 0.5;
+    // color.rgb += vBrightness * 0.25;
+    gl_FragColor = color * alpha;
+}
+
+</script>
+
+<script src="js/three.js"></script>
+<script src="js/pixi.js"></script>
+<script src="js/objParser.js"></script>
+<script src="js/pixiCustom.js"></script>
+<script>
+
+var time;
+
+var renderer;
+var scene;
+
+var mesh;
+
+var rotationMatrix;
+var rotationCorrectionMatrix;
+
+function init() {
+    renderer = new PIXI.WebGLRenderer(window.innerWidth, window.innerHeight, {
+        antialias: true
+    });
+
+    scene = new PIXI.Container();
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function (){
+        if (xmlhttp.readyState == 4) {
+            if (xmlhttp.status == 200) {
+                onModelLoad(xmlhttp.responseText);
+            } else {
+                console.error('model load failed');
+            }
+        }
+    };
+    xmlhttp.open('GET', 'model/snow.obj', true);
+    xmlhttp.send(null);
+
+    document.body.appendChild(renderer.view);
+    window.addEventListener('resize', onResize);
+    onResize();
+    loop();
+}
+
+function onModelLoad(text) {
+
+    var geometry = objParser(text)[0].geometry;
+
+    rotationMatrix = new THREE.Matrix4();
+    rotationCorrectionMatrix = new THREE.Matrix4();
+
+    var meshShader = new pixiCustom.Shader({
+        renderer: renderer,
+        vs : document.getElementById('shader-vs').innerHTML,
+        fs : document.getElementById('shader-fs').innerHTML,
+        attributes : {
+            vertices: {
+                id: 'aVertexPosition',
+                type: '3f'
+            },
+            aNormal: {
+                type: '3f'
+            }
+        },
+        uniforms : {
+            uTime:  { type: '1f' },
+            uTexture:  { type: 't' },
+            uRotation : { type: 'm4'}
+        }
+    });
+    mesh = new pixiCustom.Mesh({
+        shader : meshShader,
+        vertices : new Float32Array(geometry.vertices),
+        aNormal : new Float32Array(geometry.normals),
+        uTime : 0,
+        uTexture : PIXI.Texture.fromImage('img/sem.jpg'),
+        uRotation : rotationMatrix.elements,
+        beforeRender: function (gl) {
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthFunc(gl.LEQUAL);
+        },
+        afterRender: function (gl) {
+
+        }
+    });
+
+    scene.addChild(mesh);
+    onResize();
+}
+
+function onResize() {
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+    if(mesh) {
+        mesh.position.x = width / 2;
+        mesh.position.y = height / 2;
+        var scale = height / 15;
+        mesh.scale.set(scale, scale);
+    }
+    renderer.resize(width, height);
+}
+
+function loop() {
+    window.requestAnimationFrame(loop);
+    var now = Date.now();
+    render(time ? now - time : 0);
+    time = now;
+}
+
+function render(dt) {
+    if(mesh) {
+        mesh.uTime += dt;
+        rotationCorrectionMatrix.makeRotationX(-Math.PI / 2);
+        rotationMatrix.makeRotationY(mesh.uTime * 0.0005);
+        rotationMatrix.multiply(rotationCorrectionMatrix);
+        renderer.render(scene);
+    }
+    renderer.render(scene);
+}
+
+init();
+</script>
+<div class="view-source-btn" onclick="window.open('view-source:' + window.location.href );">View Source</div>
+<div class="info">
+    <div>This example is to show loading a 3d model into pixi. No perspective at the moment, if you need perspective, update the matrix :D.</div>
+    <div>The OBJ model parser stole from THREEJS Example<a href="http://threejs.org/examples/" target="_blank">here</a></div>
+    <div>Optimizated model stole from <a href="https://sketchfab.com/models/04d109f5edb3407ca8939a109742fece" target="_blank">here</a> by <a target="_blank" href="https://twitter.com/zafio">Julio Iglesias</a></div>
+    <div>Awesome SEM shader stole from <a href="http://www.clicktorelease.com/code/spherical-environment-mapping/" target="_blank">here</a> by <a target="_blank" href="https://twitter.com/thespite">Jaume Sanchez Elias</a></div>
+</div>
+
+</body>
+</html>
