@@ -10,6 +10,8 @@
         height: 100%;
         margin: 0 0;
         overflow: hidden;
+        font-family: 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
+        font-size: 12px;
     }
     .view-source-btn {
         position: fixed;
@@ -17,11 +19,25 @@
         left: 20px;
         top: 20px;
         padding: 2px 5px;
-        font-family: 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
         font-size: 12px;
         cursor: pointer;
         background-color: #eee;
         color: #000;
+    }
+    .info {
+        position: fixed;
+        z-index: 512;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        padding: 5px 20px;
+        background-color: rgba(255, 255, 255, 0.75);
+        line-height: 18px;
+        color: #000;
+    }
+    a {
+        font-weight: bold;
+        color: #c00;
     }
     </style>
 </head>
@@ -195,5 +211,8 @@ function render(dt) {
 init();
 </script>
 <div class="view-source-btn" onclick="window.open('view-source:' + window.location.href );">View Source</div>
+<div class="info">
+    <div>This example is to show how to update the attributes by setting the dirties value to true.</div>
+</div>
 </body>
 </html>

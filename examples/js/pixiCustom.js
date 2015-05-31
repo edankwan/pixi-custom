@@ -76,8 +76,6 @@ function Points(cfg) {
 
         drawOffset: 0,
 
-        cullFace: false, //'BACK' or 'FRONT'
-
         blendMode : PIXI.BLEND_MODES.NORMAL,
 
         drawCount: 4294967295
@@ -104,7 +102,13 @@ _p._renderWebGL = function (renderer) {
    this.shader.render(this);
 };
 
+// this is for internal use
 _p._beforeDrawing = function (gl) {};
+
+// over this to do things like gl.enable(gl.CULL_FACE) or gl.enable(gl.DEPTH_TEST)
+_p.beforeRender = function(gl) {};
+
+_p.afterRender = function(gl) {};
 
 module.exports = Points;
 
@@ -293,11 +297,7 @@ _p.render = function(customObject) {
     gl.uniformMatrix3fv(this.internalUniforms.projectionMatrix._location, false, renderer.currentRenderTarget.projectionMatrix.toArray(true));
     gl.uniform1f(this.internalUniforms.alpha._location, customObject.worldAlpha);
 
-
-    if(customObject.cullFace) {
-        gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl[customObject.cullFace]);
-    }
+    customObject.beforeRender(gl);
 
     for(id in uniforms) {
         uniform = uniforms[id];
@@ -353,9 +353,7 @@ _p.render = function(customObject) {
         gl.drawArrays(drawMode, drawOffset, drawCount);
     }
 
-    if(customObject.cullFace) {
-        gl.disable(gl.CULL_FACE);
-    }
+    customObject.afterRender(gl);
 
 };
 
