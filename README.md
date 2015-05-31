@@ -84,3 +84,6 @@ uniform float alpha;
 
 #### Draw Offset
 [![http://edankwan.github.io/pixi-custom/examples/draw-offset.html](http://edankwan.github.io/pixi-custom/screenshot/draw-offset.jpg)](http://edankwan.github.io/pixi-custom/examples/draw-offset.html)
+
+#### Model
+[![http://edankwan.github.io/pixi-custom/examples/model.html](http://edankwan.github.io/pixi-custom/screenshot/model.jpg)](http://edankwan.github.io/pixi-custom/examples/model.html)
