@@ -72,6 +72,18 @@ var globe;
 
 var rotationMatrix;
 
+var img;
+
+function preload() {
+    img = new Image();
+    img.src = 'img/earth.jpg';
+    if(img.width) {
+        init();
+    } else {
+        img.onload = init;
+    }
+}
+
 function init() {
     renderer = new PIXI.WebGLRenderer(window.innerWidth, window.innerHeight, {
         antialias: true
@@ -113,13 +125,31 @@ function init() {
         aUV : bufferGeometry.attributes.uv.array,
         aNormal : bufferGeometry.attributes.normal.array,
         uTime : 0,
-        uTexture : PIXI.Texture.fromImage('img/earth.jpg'),
+        uTexture : new PIXI.Texture(new PIXI.BaseTexture(img)),
         uRotation : rotationMatrix.elements,
         beforeRender: function(gl) {
             gl.enable(gl.CULL_FACE);
-            gl.cullFace(gl.FRONT); // frontFace issue?
+            gl.cullFace(gl.FRONT);
+        },
+        afterRender: function(gl) {
+            gl.disable(gl.CULL_FACE);
         }
     });
+
+    function CustomFilter(fragmentSource) {
+        PIXI.AbstractFilter.call(this,
+            null,
+            fragmentSource,
+            {
+                uValue : {type : '1f', value : 0}
+            }
+        );
+    }
+
+    // define the bound box manually
+    globe.bounds = new PIXI.Rectangle(-300, -300, 600, 600);
+    globe.filters = [new PIXI.filters.BlurFilter()];
+    globe.filters[0].blur = 4;
 
     scene.addChild(globe);
 
@@ -150,11 +180,11 @@ function render(dt) {
     renderer.render(scene);
 }
 
-init();
+preload();
 </script>
 <div class="view-source-btn" onclick="window.open('view-source:' + window.location.href );">View Source</div>
 <div class="info">
-    <div>This example is to show how to draw 3D Mesh. For convienence, it uses THREE.JS to create the geometry attributes and do the 3d rotation with its Matrix4.</div>
+    <div>This example is to show how to use filters for post-processing on top of the pixi-custom instance.</div>
 </div>
 </body>
 </html>

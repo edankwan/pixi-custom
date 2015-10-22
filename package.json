@@ -1,7 +1,7 @@
 {
   "name": "pixi-custom",
   "version": "0.0.6",
-  "description": "A flexible(sort of) way to expose the possibility of using vertex shader in PIXI 3.0",
+  "description": "A flexible(sort of) way to expose the possibility of using vertex shader in PIXI 3",
   "main": "index.js",
   "directories": {
     "example": "examples"
