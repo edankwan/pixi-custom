@@ -3,43 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Mesh</title>
-    <style>
-
-    html, body {
-        width: 100%;
-        height: 100%;
-        margin: 0 0;
-        overflow: hidden;
-        font-family: 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
-        font-size: 12px;
-    }
-    .view-source-btn {
-        position: fixed;
-        z-index: 1024;
-        left: 20px;
-        top: 20px;
-        padding: 2px 5px;
-        font-size: 12px;
-        cursor: pointer;
-        background-color: #eee;
-        color: #000;
-    }
-    .info {
-        position: fixed;
-        z-index: 512;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        padding: 5px 20px;
-        background-color: rgba(255, 255, 255, 0.75);
-        line-height: 18px;
-        color: #000;
-    }
-    a {
-        font-weight: bold;
-        color: #c00;
-    }
-    </style>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
 
@@ -50,32 +17,24 @@ attribute vec3 aVertexPosition;
 attribute vec3 aNormal;
 
 varying vec2 vN;
-// varying float vBrightness;
 
 uniform mat3 translationMatrix;
 uniform mat3 projectionMatrix;
-uniform mat4 uRotation;
-
-uniform float uTime;
-
-#define PI 3.141592653589
-#define PI2 6.283185307179
+uniform mat4 uView;
 
 void main(void) {
     vec3 pos = aVertexPosition;
 
-    vec3 e = normalize( vec3( uRotation * vec4( pos, 1.0 ) ) );
-    vec3 n = normalize( (uRotation * vec4(aNormal, 1.0)).xyz );
+    vec3 e = normalize( vec3( uView * vec4( pos, 1.0 ) ) );
+    vec3 n = normalize( (uView * vec4(aNormal, 1.0)).xyz );
 
     vec3 r = reflect( e, n );
     float m = 2. * sqrt( pow( r.x, 2. ) + pow( r.y, 2. ) + pow( r.z + 1., 2. ) );
     vN = r.xy / m + .5;
 
-    // vBrightness = dot((uRotation * vec4(aNormal, 1.0)).xyz, normalize(vec3(1.0, -1.0, 1.0)));
+    pos = (uView * vec4(pos, 1.0)).xyz;
 
-    pos = (uRotation * vec4(pos, 1.0)).xyz;
-
-    gl_Position = vec4((projectionMatrix * translationMatrix * pos).xy, pos.z * 0.001, 1.0);
+    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(pos.xy, 1.0)).xy, pos.z * 0.001, 1.0);
 
 }
 
@@ -99,21 +58,29 @@ void main(void) {
 
 </script>
 
-<script src="js/three.js"></script>
+<script src="js/gl-matrix.js"></script>
 <script src="js/pixi.js"></script>
 <script src="js/objParser.js"></script>
 <script src="js/pixiCustom.js"></script>
+<script src="js/OrbitCamera.js"></script>
 <script>
 
 var time;
 
 var renderer;
 var scene;
+var camera;
 
 var mesh;
 
-var rotationMatrix;
-var rotationCorrectionMatrix;
+var defaultMatrix;
+var viewMatrix;
+var width = 0;
+var height = 0;
+var lastX = 0;
+var lastY = 0;
+var timeSum = 0;
+var isDown = false;
 
 function init() {
     renderer = new PIXI.WebGLRenderer(window.innerWidth, window.innerHeight, {
@@ -145,8 +112,8 @@ function onModelLoad(text) {
 
     var geometry = objParser(text)[0].geometry;
 
-    rotationMatrix = new THREE.Matrix4();
-    rotationCorrectionMatrix = new THREE.Matrix4();
+    camera = OrbitCamera.create([0, 0, 0], [0, 0, 0], [0, 5, 0]);
+    viewMatrix = mat4.create();
 
     var meshShader = new pixiCustom.Shader({
         renderer: renderer,
@@ -162,18 +129,16 @@ function onModelLoad(text) {
             }
         },
         uniforms : {
-            uTime:  { type: '1f' },
             uTexture:  { type: 't' },
-            uRotation : { type: 'm4'}
+            uView : { type: 'm4'}
         }
     });
     mesh = new pixiCustom.Mesh({
         shader : meshShader,
         vertices : new Float32Array(geometry.vertices),
         aNormal : new Float32Array(geometry.normals),
-        uTime : 0,
-        uTexture : PIXI.Texture.fromImage('img/sem.jpg'),
-        uRotation : rotationMatrix.elements,
+        uTexture : PIXI.Texture.fromImage('img/sem_2.jpg'),
+        uView : viewMatrix,
         beforeRender: function (gl) {
             gl.enable(gl.DEPTH_TEST);
             gl.depthFunc(gl.LEQUAL);
@@ -183,16 +148,52 @@ function onModelLoad(text) {
         }
     });
 
+    renderer.view.addEventListener('mousedown', onDown);
+    renderer.view.addEventListener('touchdown', onDown);
+    renderer.view.addEventListener('mousemove', onMove);
+    renderer.view.addEventListener('touchmove', onMove);
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchend', onUp);
+
     scene.addChild(mesh);
     onResize();
 }
 
+function onDown(evt) {
+    isDown = true;
+    if(evt.touches) {
+        lastX = evt.touches[0].pageX;
+        lastY = evt.touches[1].pageY;
+    } else {
+        lastX = evt.pageX;
+        lastY = evt.pageY;
+    }
+}
+function onMove(evt) {
+    if(isDown) {
+        var x, y;
+        if(evt.touches) {
+            x = evt.touches[0].pageX;
+            y = evt.touches[1].pageY;
+        } else {
+            x = evt.pageX;
+            y = evt.pageY;
+        }
+        camera.rotate([lastX / width-0.5, y / height-0.5], [x / width-0.5, lastY / height-0.5]);
+        lastX = x;
+        lastY = y;
+    }
+}
+function onUp(evt) {
+    isDown = false;
+}
+
 function onResize() {
-    var width = window.innerWidth;
-    var height = window.innerHeight;
+    width = window.innerWidth;
+    height = window.innerHeight;
     if(mesh) {
         mesh.position.x = width / 2;
-        mesh.position.y = height / 2;
+        mesh.position.y = height / 2 - 50;
         var scale = height / 15;
         mesh.scale.set(scale, scale);
     }
@@ -208,10 +209,13 @@ function loop() {
 
 function render(dt) {
     if(mesh) {
-        mesh.uTime += dt;
-        rotationCorrectionMatrix.makeRotationX(-Math.PI / 2);
-        rotationMatrix.makeRotationY(mesh.uTime * 0.0005);
-        rotationMatrix.multiply(rotationCorrectionMatrix);
+        camera.view(viewMatrix);
+        mat4.rotateZ(viewMatrix, viewMatrix, Math.PI);
+        mat4.rotateX(viewMatrix, viewMatrix, Math.PI / 2);
+        if(!isDown) {
+            timeSum += dt;
+        }
+        mat4.rotateZ(viewMatrix, viewMatrix, timeSum * 0.001);
         renderer.render(scene);
     }
     renderer.render(scene);
